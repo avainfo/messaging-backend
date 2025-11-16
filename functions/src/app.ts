@@ -41,6 +41,7 @@ export function createApp() {
             status: "started",
             firebaseStatus,
             firestoreStatus,
+            time: new Date().toISOString(),
         });
     });
 
