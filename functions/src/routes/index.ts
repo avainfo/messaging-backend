@@ -1,7 +1,13 @@
-import {Router} from "express";
+import { Router } from "express";
+import { serversRouter } from "./serversRouter";
 
 export const router = Router();
 
-// router.use("/servers", serversRouter);
-// router.use("/channels", channelsRouter);
-// router.use("/messages", messagesRouter);
+// /servers...
+router.use("/servers", serversRouter);
+
+// /servers/:serverId/channels...
+// router.use("/servers/:serverId/channels", channelsRouter);
+
+// /channels/:channelId/messages...
+// router.use("/channels/:channelId/messages", messagesRouter);

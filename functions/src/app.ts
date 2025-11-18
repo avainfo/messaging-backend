@@ -46,7 +46,7 @@ export function createApp() {
     });
 
     // Routes API
-    app.use("/api", router);
+    app.use("/", router);
 
     // Error Middleware
     app.use(errorHandler);
