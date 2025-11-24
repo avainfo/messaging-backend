@@ -57,6 +57,9 @@ Vous devez développer une application Flutter qui communique avec ce backend.
 | `/servers/:serverId/channels` | POST | Créer un channel |
 | `/channels/:channelId/messages` | GET | Liste des messages d'un channel |
 | `/channels/:channelId/messages` | POST | Envoyer un message |
+| `/messages/:messageId/reactions` | GET | Liste des réactions d'un message |
+| `/messages/:messageId/reactions` | POST | Ajouter une réaction |
+| `/messages/:messageId/reactions` | DELETE | Supprimer une réaction |
 
 ### 💡 Ce que Vous Devez Faire
 
@@ -186,10 +189,11 @@ npm test
 ```
 
 **Couverture actuelle :**
-- ✅ 18 tests / 18 passés
+- ✅ 29 tests / 29 passés
 - ✅ Serveurs : GET, POST + cas d'erreur
 - ✅ Channels : GET, POST + cas d'erreur
 - ✅ Messages : GET, POST + cas d'erreur
+- ✅ Reactions : GET, POST, DELETE + cas d'erreur
 
 ### 📚 Documentation API
 

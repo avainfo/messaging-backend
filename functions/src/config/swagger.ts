@@ -31,6 +31,10 @@ const options: swaggerJsdoc.Options = {
         name: "Messages",
         description: "Gestion des messages dans les channels",
       },
+      {
+        name: "Reactions",
+        description: "Gestion des réactions sur les messages",
+      },
     ],
   },
   apis: ["./src/routes/*.ts"],

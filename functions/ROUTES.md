@@ -46,6 +46,24 @@
   - Body : `{authorId, authorName, authorAvatarUrl?, content}`
   - Réponse : Message créé (201)
 
+### 5. Reactions
+- **GET `/messages/:messageId/reactions`**
+  - Description : Liste les réactions d'un message groupées par emoji
+  - Path params : `messageId`
+  - Réponse : Objet avec emojis comme clés et {count, users[]} comme valeurs
+
+- **POST `/messages/:messageId/reactions`**
+  - Description : Ajoute une réaction à un message
+  - Path params : `messageId`
+  - Body : `{userId, emoji}`
+  - Réponse : Confirmation (201)
+
+- **DELETE `/messages/:messageId/reactions`**
+  - Description : Supprime une réaction d'un message
+  - Path params : `messageId`
+  - Body : `{userId, emoji}`
+  - Réponse : Confirmation (200)
+
 ---
 
-**Total : 7 routes (1 health + 2 servers + 2 channels + 2 messages)**
+**Total : 10 routes (1 health + 2 servers + 2 channels + 2 messages + 3 reactions)**

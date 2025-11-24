@@ -90,6 +90,9 @@ Voici les routes que vous devez appeler depuis Flutter :
 | **POST `/servers/:serverId/channels`**   | Création d'un channel               | Envoyer `{ name }`                                     |
 | **GET `/channels/:channelId/messages`**  | Récupérer les messages d'un channel | Afficher l'historique + pagination si nécessaire             |
 | **POST `/channels/:channelId/messages`** | Envoyer un message                  | Envoyer `{ authorId, authorName, authorAvatarUrl, content }` |
+| **GET `/messages/:messageId/reactions`** | Liste des réactions d'un message    | Afficher les réactions groupées par emoji                    |
+| **POST `/messages/:messageId/reactions`** | Ajouter une réaction               | Envoyer `{ userId, emoji }`                                  |
+| **DELETE `/messages/:messageId/reactions`** | Supprimer une réaction          | Envoyer `{ userId, emoji }`                                  |
 
 **Note :**
 Aucun token Firebase n'est nécessaire → vos requêtes sont **simples**, avec un body JSON uniquement.

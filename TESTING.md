@@ -441,18 +441,96 @@ curl -X POST https://us-central1-messaging-backend-m2i.cloudfunctions.net/api/ch
 }
 ```
 
-**❌ Requête invalide (authorId manquant)**
+---
+
+### 5. Reactions Routes
+
+#### GET /messages/:messageId/reactions
+
+**✅ Requête valide**
+
+<details>
+<summary>Windows (PowerShell)</summary>
+
+```powershell
+Invoke-WebRequest -Uri "https://us-central1-messaging-backend-m2i.cloudfunctions.net/api/messages/msg123/reactions" -Method GET | Select-Object -Expand Content
+```
+</details>
+
+<details>
+<summary>macOS / Linux / Windows (curl)</summary>
+
+```bash
+curl https://us-central1-messaging-backend-m2i.cloudfunctions.net/api/messages/msg123/reactions
+```
+</details>
+
+**Réponse attendue :**
+```json
+{
+  "👍": {
+    "count": 2,
+    "users": ["user1", "user2"]
+  },
+  "❤️": {
+    "count": 1,
+    "users": ["user3"]
+  }
+}
+```
+
+#### POST /messages/:messageId/reactions
+
+**✅ Requête valide**
 
 <details>
 <summary>Windows (PowerShell)</summary>
 
 ```powershell
 $body = @{
-    authorName = "Alice"
-    content = "Hello!"
+    userId = "user123"
+    emoji = "👍"
 } | ConvertTo-Json
 
-Invoke-WebRequest -Uri "https://us-central1-messaging-backend-m2i.cloudfunctions.net/api/channels/channel123/messages" `
+Invoke-WebRequest -Uri "https://us-central1-messaging-backend-m2i.cloudfunctions.net/api/messages/msg123/reactions" `
+  -Method POST `
+  -ContentType "application/json" `
+  -Body $body | Select-Object -Expand Content
+```
+</details>
+
+<details>
+<summary>macOS / Linux / Windows (curl)</summary>
+
+```bash
+curl -X POST https://us-central1-messaging-backend-m2i.cloudfunctions.net/api/messages/msg123/reactions \
+  -H "Content-Type: application/json" \
+  -d '{
+    "userId": "user123",
+    "emoji": "👍"
+  }'
+```
+</details>
+
+**Réponse attendue (201) :**
+```json
+{
+  "success": true,
+  "message": "Reaction added successfully"
+}
+```
+
+**❌ Requête invalide (emoji manquant)**
+
+<details>
+<summary>Windows (PowerShell)</summary>
+
+```powershell
+$body = @{
+    userId = "user123"
+} | ConvertTo-Json
+
+Invoke-WebRequest -Uri "https://us-central1-messaging-backend-m2i.cloudfunctions.net/api/messages/msg123/reactions" `
   -Method POST `
   -ContentType "application/json" `
   -Body $body
@@ -463,12 +541,9 @@ Invoke-WebRequest -Uri "https://us-central1-messaging-backend-m2i.cloudfunctions
 <summary>macOS / Linux / Windows (curl)</summary>
 
 ```bash
-curl -X POST https://us-central1-messaging-backend-m2i.cloudfunctions.net/api/channels/channel123/messages \
+curl -X POST https://us-central1-messaging-backend-m2i.cloudfunctions.net/api/messages/msg123/reactions \
   -H "Content-Type: application/json" \
-  -d '{
-    "authorName": "Alice",
-    "content": "Hello!"
-  }'
+  -d '{"userId": "user123"}'
 ```
 </details>
 
@@ -476,7 +551,83 @@ curl -X POST https://us-central1-messaging-backend-m2i.cloudfunctions.net/api/ch
 ```json
 {
   "error": "Bad Request",
-  "message": "authorId is required"
+  "message": "emoji is required"
+}
+```
+
+#### DELETE /messages/:messageId/reactions
+
+**✅ Requête valide**
+
+<details>
+<summary>Windows (PowerShell)</summary>
+
+```powershell
+$body = @{
+    userId = "user123"
+    emoji = "👍"
+} | ConvertTo-Json
+
+Invoke-WebRequest -Uri "https://us-central1-messaging-backend-m2i.cloudfunctions.net/api/messages/msg123/reactions" `
+  -Method DELETE `
+  -ContentType "application/json" `
+  -Body $body | Select-Object -Expand Content
+```
+</details>
+
+<details>
+<summary>macOS / Linux / Windows (curl)</summary>
+
+```bash
+curl -X DELETE https://us-central1-messaging-backend-m2i.cloudfunctions.net/api/messages/msg123/reactions \
+  -H "Content-Type: application/json" \
+  -d '{
+    "userId": "user123",
+    "emoji": "👍"
+  }'
+```
+</details>
+
+**Réponse attendue (200) :**
+```json
+{
+  "success": true,
+  "message": "Reaction removed successfully"
+}
+```
+
+**❌ Requête invalide (userId manquant)**
+
+<details>
+<summary>Windows (PowerShell)</summary>
+
+```powershell
+$body = @{
+    emoji = "👍"
+} | ConvertTo-Json
+
+Invoke-WebRequest -Uri "https://us-central1-messaging-backend-m2i.cloudfunctions.net/api/messages/msg123/reactions" `
+  -Method DELETE `
+  -ContentType "application/json" `
+  -Body $body
+```
+</details>
+
+<details>
+<summary>macOS / Linux / Windows (curl)</summary>
+
+```bash
+curl -X DELETE https://us-central1-messaging-backend-m2i.cloudfunctions.net/api/messages/msg123/reactions \
+  -H "Content-Type: application/json" \
+  -d '{"emoji": "👍"}'
+```
+</details>
+
+**Réponse attendue (400) :**
+```json
+{
+  "error": "Bad Request",
+  "message": "userId is required"
 }
 ```
 
@@ -517,12 +668,37 @@ curl -X POST https://us-central1-messaging-backend-m2i.cloudfunctions.net/api/ch
     "authorName": "Test User",
     "content": "Premier message !"
   }'
+
+# Récupérer l'ID du message dans la réponse (ex: "msg123")
 ```
 
-### Étape 4 : Récupérer les messages
+### Étape 4 : Ajouter une réaction
 
 ```bash
-curl https://us-central1-messaging-backend-m2i.cloudfunctions.net/api/channels/channel123/messages
+# Utiliser l'ID du message de l'étape 3
+curl -X POST https://us-central1-messaging-backend-m2i.cloudfunctions.net/api/messages/msg123/reactions \
+  -H "Content-Type: application/json" \
+  -d '{
+    "userId": "testUser",
+    "emoji": "👍"
+  }'
+```
+
+### Étape 5 : Récupérer les réactions
+
+```bash
+curl https://us-central1-messaging-backend-m2i.cloudfunctions.net/api/messages/msg123/reactions
+```
+
+### Étape 6 : Supprimer une réaction
+
+```bash
+curl -X DELETE https://us-central1-messaging-backend-m2i.cloudfunctions.net/api/messages/msg123/reactions \
+  -H "Content-Type: application/json" \
+  -d '{
+    "userId": "testUser",
+    "emoji": "👍"
+  }'
 ```
 
 ---
