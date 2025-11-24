@@ -8,8 +8,7 @@
   "scripts": {
     "build": "tsc",
     "start": "node lib/index.js",
-    "test": "jest",
-    "lint": "eslint --ext .js,.ts ."
+    "test": "jest"
   },
   "dependencies": {
     "cookie-parser": "^1.4.6",
@@ -32,11 +31,6 @@
     "@types/supertest": "^6.0.3",
     "@types/swagger-jsdoc": "^6.0.4",
     "@types/swagger-ui-express": "^4.1.8",
-    "@typescript-eslint/eslint-plugin": "^8.47.0",
-    "@typescript-eslint/parser": "^8.47.0",
-    "eslint": "^8.57.1",
-    "eslint-config-google": "^0.14.0",
-    "eslint-plugin-import": "^2.32.0",
     "firebase-functions-test": "^3.4.1",
     "jest": "^30.2.0",
     "supertest": "^7.1.4",

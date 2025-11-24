@@ -3,7 +3,6 @@ import { serversRouter } from "./serversRouter";
 import { channelsRouter } from "./channelsRouter";
 import { messagesRouter } from "./messagesRouter";
 
-// eslint-disable-next-line new-cap
 export const router = Router();
 
 // /servers...

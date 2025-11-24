@@ -5,7 +5,6 @@ import {
   getServersOrderBy,
 } from "../firebase/server-utils";
 
-// eslint-disable-next-line new-cap
 export const serversRouter: Router = Router();
 
 /**

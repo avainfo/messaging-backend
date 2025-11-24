@@ -1,7 +1,6 @@
 import { Router } from "express";
 import { createChannel, getChannels } from "../firebase/channel-utils";
 
-// eslint-disable-next-line new-cap
 export const channelsRouter: Router = Router({ mergeParams: true });
 
 /**

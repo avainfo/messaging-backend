@@ -1,7 +1,6 @@
 import { Router } from "express";
 import { createMessage, getMessages } from "../firebase/message-utils";
 
-// eslint-disable-next-line new-cap
 export const messagesRouter: Router = Router({ mergeParams: true });
 
 /**
