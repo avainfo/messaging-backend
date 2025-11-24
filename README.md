@@ -1,183 +1,220 @@
-# 📘 **Cahier des charges - Projet Fil Rouge Flutter & API**
+# 📘 Messaging Backend - Projet Pédagogique Flutter
 
-## 🎯 **Objectif**
+## 🎯 Contexte du Projet
 
-Développer une **application Flutter de messagerie** connectée à un backend commun (fourni par le formateur).
-Votre rôle : créer une **UI complète**, gérer **Firebase Auth**, et consommer les **routes REST** ci-dessous.
+Ce projet est un **backend de messagerie inspiré de Discord**, conçu dans un cadre pédagogique pour l'apprentissage du développement mobile avec Flutter.
 
-**Important :**
+### 🔵 Architecture du Projet
 
-* Vous utilisez **votre propre Firebase** uniquement pour l’authentification.
-* Le backend gère **serveurs**, **channels**, **messages**.
-* Vous ne modifiez **pas** le backend et **pas** Firestore directement.
+Le projet est divisé en deux parties distinctes :
 
----
+#### **Backend (que je fournis)**
+- API REST complète basée sur Firebase Cloud Functions
+- Base de données Firestore structurée
+- Gestion des serveurs, channels et messages
+- Déploiement centralisé : **un seul backend pour tous mes étudiants**
 
-# 🧭 **Fonctionnalités à implémenter**
-
-## ✔️ 1. Authentification (Firebase Auth – votre projet)
-
-Votre app doit permettre :
-
-* inscription (email + mot de passe)
-* connexion
-* déconnexion
-* gestion du `displayName`
-* récupération du `uid` Firebase
-  → utilisé comme `authorId` dans l’API
+#### **Frontend Flutter (à développer par mes étudiants)**
+- Application mobile complète
+- Authentification Firebase (projet Firebase personnel de chaque étudiant)
+- Interface utilisateur et navigation
+- Consommation de l'API REST que je fournis
+- Gestion d'état et architecture propre
 
 ---
 
-## ✔️ 2. Navigation principale
+## 🎓 Pour les Étudiants
 
-Votre application doit contenir les écrans suivants :
+Vous devez développer une application Flutter qui communique avec ce backend.
 
-### 🔹 Page d'accueil (serveurs)
+### 📚 Documentation à Consulter
 
-* affiche la liste des serveurs récupérés depuis :
-  **GET /servers**
-* permet de créer un serveur via :
-  **POST /servers**
+1. **[SPECIFICATIONS.md](SPECIFICATIONS.md)** : Cahier des charges complet avec :
+   - Les fonctionnalités à implémenter
+   - La structure de données Firestore
+   - Les endpoints de l'API à consommer
+   - Les contraintes techniques
 
-### 🔹 Page channels d’un serveur
+2. **[TESTING.md](TESTING.md)** : Guide de test de l'API avec :
+   - Exemples de requêtes pour tous les endpoints
+   - Cas de succès et d'erreur
+   - Commandes curl et PowerShell prêtes à l'emploi
 
-* affiche les channels d’un serveur via :
-  **GET /servers/:serverId/channels**
-* permet de créer un channel via :
-  **POST /servers/:serverId/channels**
+### 🚀 URL de l'API
 
-### 🔹 Page chat d’un channel
+**Base URL :** `https://us-central1-messaging-backend-m2i.cloudfunctions.net/api`
 
-* affiche les messages du channel via :
-  **GET /channels/:channelId/messages**
-* permet d’envoyer un message via :
-  **POST /channels/:channelId/messages**
+**Documentation Swagger :** `https://us-central1-messaging-backend-m2i.cloudfunctions.net/api/docs`
 
-### 🔹 Page profil
+### 📡 Endpoints Disponibles
 
-* affiche le profil Firebase
-* permet de modifier le nom & avatar (local)
-* permet de se déconnecter
+| Endpoint | Méthode | Description |
+|----------|---------|-------------|
+| `/health` | GET | Vérification du statut de l'API |
+| `/servers` | GET | Liste des serveurs (param: `userId`) |
+| `/servers` | POST | Créer un serveur |
+| `/servers/:serverId/channels` | GET | Liste des channels d'un serveur |
+| `/servers/:serverId/channels` | POST | Créer un channel |
+| `/channels/:channelId/messages` | GET | Liste des messages d'un channel |
+| `/channels/:channelId/messages` | POST | Envoyer un message |
+
+### 💡 Ce que Vous Devez Faire
+
+- ✅ Mettre en place Firebase Authentication (votre propre projet Firebase)
+- ✅ Créer les modèles de données (`Server`, `Channel`, `Message`)
+- ✅ Implémenter un service API pour consommer les endpoints
+- ✅ Développer les écrans : serveurs, channels, chat, profil
+- ✅ Gérer la navigation entre les écrans
+- ✅ Utiliser une solution de gestion d'état (Provider, Riverpod, Bloc...)
+- ✅ Créer une interface utilisateur agréable et responsive
+
+### 🔐 Authentification
+
+- Utilisez Firebase Auth avec **votre propre projet Firebase**
+- Récupérez le `uid` de l'utilisateur connecté
+- Utilisez ce `uid` comme `authorId` ou `ownerId` dans vos requêtes API
+- **Aucun token n'est requis** pour les appels API du backend
 
 ---
 
-# 📡 **API REST à consommer**
+## 👨‍🏫 Notes Techniques (Formateur)
 
-Voici les routes que vous devez appeler depuis Flutter :
+### 🛠️ Technologies Utilisées
 
-| Méthode + Route                          | Action                              | Ce que votre app doit faire                                  |
-| ---------------------------------------- | ----------------------------------- | ------------------------------------------------------------ |
-| **GET `/health`**                        | Ping API                            | Appeler une fois pour tester la connexion                    |
-| **GET `/servers`**                       | Liste des serveurs                  | Récupérer et afficher les serveurs                           |
-| **POST `/servers`**                      | Création d’un serveur               | Envoyer `{ name, ownerId }`                                  |
-| **GET `/servers/:serverId/channels`**    | Liste des channels                  | Afficher les channels d’un serveur                           |
-| **POST `/servers/:serverId/channels`**   | Création d’un channel               | Envoyer `{ name, type }`                                     |
-| **GET `/channels/:channelId/messages`**  | Récupérer les messages d’un channel | Afficher l’historique + pagination si nécessaire             |
-| **POST `/channels/:channelId/messages`** | Envoyer un message                  | Envoyer `{ authorId, authorName, authorAvatarUrl, content }` |
+- **Runtime** : Node.js 18
+- **Framework** : Express.js
+- **Cloud** : Firebase Cloud Functions
+- **Base de données** : Firestore
+- **Documentation API** : Swagger UI (disponible sur `/docs`)
+- **Tests** : Jest + Supertest
 
-**Note :**
-Aucun token Firebase n’est nécessaire → vos requêtes sont **simples**, avec un body JSON uniquement.
+### 📦 Installation Locale
 
----
+```bash
+# Installer les dépendances
+cd functions
+npm install
 
-# 🗄️ **Structure Firestore du backend (référence)**
+# Lancer l'émulateur local
+npm run start
 
-*(Vous n’y accédez pas directement — cette structure vous est donnée pour comprendre l’API.)*
+# Lancer les tests
+npm test
+
+# Linter le code
+npm run lint
+```
+
+### 🚀 Déploiement
+
+```bash
+# Build du projet
+cd functions
+npm run build
+
+# Déploiement sur Firebase
+firebase deploy --only functions
+```
+
+### 📊 Structure du Projet
+
+```
+messaging-backend/
+├── functions/
+│   ├── src/
+│   │   ├── app.ts                    # Configuration Express
+│   │   ├── index.ts                  # Entry point Cloud Functions
+│   │   ├── config/                   # Configuration (Swagger, env)
+│   │   ├── firebase/                 #Utils Firestore
+│   │   │   ├── firebase.ts          # Initialisation Firebase Admin
+│   │   │   ├── server-utils.ts      # CRUD serveurs
+│   │   │   ├── channel-utils.ts     # CRUD channels
+│   │   │   └── message-utils.ts     # CRUD messages
+│   │   ├── middlewares/              # Error handler
+│   │   ├── routes/                   # Routers Express
+│   │   │   ├── index.ts             # Router principal
+│   │   │   ├── serversRouter.ts     # Routes /servers
+│   │   │   ├── channelsRouter.ts    # Routes /channels
+│   │   │   └── messagesRouter.ts    # Routes /messages
+│   │   └── tests/                    # Tests unitaires
+│   ├── package.json
+│   └── tsconfig.json
+├── SPECIFICATIONS.md                  # Cahier des charges étudiants
+├── TESTING.md                         # Guide de test de l'API
+└── README.md                          # Ce fichier
+```
+
+### 🗄️ Structure Firestore
 
 ```
 firestore-root
 │
 ├── servers (collection)
-│     └── {serverId} (document)
-│           ├── id: string
-│           ├── name: string
-│           ├── ownerId: string
-│           ├── memberIds: string[]
-│           ├── imageUrl: string | null
-│           ├── createdAt: Timestamp
-│           │
-│           └── channels (subcollection)
-│                 └── {channelId} (document)
-│                       ├── id: string
-│                       ├── serverId: string
-│                       ├── name: string
-│                       ├── type: "text"
-│                       ├── authorizedUserIds: string[]
-│                       └── createdAt: Timestamp
+│   └── {serverId} (document)
+│       ├── id: string
+│       ├── name: string
+│       ├── ownerId: string
+│       ├── memberIds: string[]
+│       ├── imageUrl: string | null
+│       └── createdAt: Timestamp
 │
-└── channels (collection)
-      └── {channelId} (document)
-            └── messages (subcollection)
-                  └── {messageId} (document)
-                        ├── id: string
-                        ├── channelId: string
-                        ├── authorId: string
-                        ├── authorName: string
-                        ├── authorAvatarUrl: string | null
-                        ├── content: string
-                        └── createdAt: Timestamp
+├── channels (collection)
+│   └── {channelId} (document)
+│       ├── id: string
+│       ├── serverId: string
+│       ├── name: string
+│       ├── type: "text"
+│       └── createdAt: Timestamp
+│
+└── channels/{channelId}/messages (subcollection)
+    └── {messageId} (document)
+        ├── id: string
+        ├── channelId: string
+        ├── authorId: string
+        ├── authorName: string
+        ├── authorAvatarUrl: string | null
+        ├── content: string
+        └── createdAt: Timestamp
+```
+
+### 🧪 Tests
+
+Le projet inclut des tests unitaires pour tous les endpoints :
+
+```bash
+npm test
+```
+
+**Couverture actuelle :**
+- ✅ 18 tests / 18 passés
+- ✅ Serveurs : GET, POST + cas d'erreur
+- ✅ Channels : GET, POST + cas d'erreur
+- ✅ Messages : GET, POST + cas d'erreur
+
+### 📚 Documentation API
+
+Une fois déployé, l'API Swagger est disponible sur :
+```
+https://[BASE_URL]/docs
 ```
 
 ---
 
-# 🎨 **Exigences UI/UX**
+## 🎯 Objectifs Pédagogiques
 
-Votre application doit être :
+Ce projet permet aux étudiants de :
 
-* fonctionnelle
-* claire et lisible
-* responsive
-* structurée (pas tout dans un seul fichier)
-* agréable à utiliser :
-
-  * auto-scroll
-  * loaders
-  * messages bien formatés
-
----
-
-# 🧱 **Contraintes techniques**
-
-* Flutter 3.x minimum
-* Null-safety obligatoire
-* Gestion d’état : Provider, Riverpod ou Bloc
-* Appels API dans un **service** dédié (pas dans les Widgets)
-* Modèles propres (`Server`, `Channel`, `Message`)
-* Architecture recommandée :
-
-  ```
-  /models
-  /services
-  /providers
-  /screens
-  /widgets
-  ```
+- 📱 Développer une application Flutter complète de A à Z
+- 🔌 Consommer une API REST réelle
+- 🔐 Intégrer Firebase Authentication
+- 🏗️ Structurer proprement une application mobile
+- 🎨 Créer une interface utilisateur moderne
+- 📊 Gérer l'état de l'application
+- 🧪 Tester leurs requêtes HTTP
+- 🚀 Travailler dans un contexte proche de la réalité professionnelle
 
 ---
 
-# 🧪 **Livrables**
+## 📄 Licence
 
-Votre application doit contenir **au minimum** :
-
-- Auth Firebase (login / signup)
-- Liste des serveurs
-- Création serveur
-- Liste des channels
-- Création channel
-- Chat (send / display messages)
-- Profil utilisateur
-- Gestion état propre
-- Code organisé + README
-
----
-
-# ⭐ Bonus facultatifs (valorisés)
-
-* thèmes clair / sombre
-* édition / suppression de messages
-* réactions emoji
-* avatars personnalisés
-* pagination infinie dans le chat
-* animations (fade-in, slide, etc.)
-* version Flutter Web
-* liste des membres du serveur
+Projet pédagogique - Usage éducatif uniquement
