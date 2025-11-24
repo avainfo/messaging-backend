@@ -1,0 +1,7 @@
+node_modules
+firebase-debug.log
+**/coverage/**
+**/.git/**
+**/.idea/**
+**/.vscode/**
+functions/lib/tests/**
