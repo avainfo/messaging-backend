@@ -4,8 +4,44 @@ import { createChannel, getChannels } from "../firebase/channel-utils";
 export const channelsRouter: Router = Router({ mergeParams: true });
 
 /**
- * GET /servers/:serverId/channels
- * Retourne la liste des channels d'un serveur.
+ * @swagger
+ * /servers/{serverId}/channels:
+ *   get:
+ *     summary: Liste des channels d'un serveur
+ *     tags: [Channels]
+ *     parameters:
+ *       - in: path
+ *         name: serverId
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: ID du serveur
+ *     responses:
+ *       200:
+ *         description: Liste des channels
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 type: object
+ *                 properties:
+ *                   id:
+ *                     type: string
+ *                   serverId:
+ *                     type: string
+ *                   name:
+ *                     type: string
+ *                   type:
+ *                     type: string
+ *                     enum: [text]
+ *                   createdAt:
+ *                     type: object
+ *                     nullable: true
+ *       400:
+ *         description: serverId manquant
+ *       500:
+ *         description: Erreur serveur
  */
 channelsRouter.get("/", async (req, res) => {
     try {
@@ -30,8 +66,54 @@ channelsRouter.get("/", async (req, res) => {
 });
 
 /**
- * POST /servers/:serverId/channels
- * Body: { name: "General" }
+ * @swagger
+ * /servers/{serverId}/channels:
+ *   post:
+ *     summary: Créer un nouveau channel
+ *     tags: [Channels]
+ *     parameters:
+ *       - in: path
+ *         name: serverId
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: ID du serveur
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - name
+ *             properties:
+ *               name:
+ *                 type: string
+ *                 description: Nom du channel
+ *     responses:
+ *       201:
+ *         description: Channel créé avec succès
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 id:
+ *                   type: string
+ *                 serverId:
+ *                   type: string
+ *                 name:
+ *                   type: string
+ *                 type:
+ *                   type: string
+ *                   enum: [text]
+ *                 createdAt:
+ *                   type: object
+ *                   nullable: true
+ *       400:
+ *         description: Paramètres manquants ou invalides
+ *       500:
+ *         description: Erreur serveur
  */
 channelsRouter.post("/", async (req, res) => {
     try {

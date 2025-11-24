@@ -3,11 +3,11 @@ import cors from "cors";
 import morgan from "morgan";
 import cookieParser from "cookie-parser";
 import swaggerUi from "swagger-ui-express";
-import {swaggerSpec} from "./config/swagger";
-import {router} from "./routes";
-import {errorHandler} from "./middlewares/errorHandler";
+import { swaggerSpec } from "./config/swagger";
+import { router } from "./routes";
+import { errorHandler } from "./middlewares/errorHandler";
 import * as admin from "firebase-admin";
-import {db} from "./firebase/firebase";
+import { db } from "./firebase/firebase";
 
 /**
  * Create and configure the Express application.
@@ -25,7 +25,35 @@ export function createApp() {
   // Swagger UI
   app.use("/docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
-  // Health check
+  /**
+   * @swagger
+   * /health:
+   *   get:
+ *     summary: Vérifie l'état de l'API
+   *     tags: [Health]
+   *     responses:
+   *       200:
+   *         description: API opérationnelle
+   *         content:
+   *           application/json:
+   *             schema:
+   *               type: object
+   *               properties:
+   *                 status:
+   *                   type: string
+   *                   example: started
+   *                 firebaseStatus:
+   *                   type: string
+   *                   example: ok
+   *                 firestoreStatus:
+   *                   type: string
+   *                   example: ok
+   *                 time:
+   *                   type: string
+   *                   format: date-time
+   *       500:
+   *         description: Erreur de connexion aux services Firebase
+   */
   app.get("/health", async (_req, res) => {
     const firebaseStatus = admin.apps.length !== 0 ? "ok" : "error";
     let firestoreStatus: string;
@@ -39,7 +67,7 @@ export function createApp() {
     }
 
     const statusCode: 200 | 500 =
-            firebaseStatus === "ok" && firestoreStatus === "ok" ? 200 : 500;
+      firebaseStatus === "ok" && firestoreStatus === "ok" ? 200 : 500;
 
     return res.status(statusCode).json({
       status: "started",

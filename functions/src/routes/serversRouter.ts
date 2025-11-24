@@ -1,4 +1,4 @@
-import {Router} from "express";
+import { Router } from "express";
 import {
   createServer,
   getServers,
@@ -8,8 +8,64 @@ import {
 export const serversRouter: Router = Router();
 
 /**
- * GET /servers?userId=...&orderBy=createdAt|name&descending=true|false
- * Retourne la liste des serveurs dont l'utilisateur est membre.
+ * @swagger
+ * /servers:
+ *   get:
+ *     summary: Liste des serveurs d'un utilisateur
+ *     tags: [Servers]
+ *     parameters:
+ *       - in: query
+ *         name: userId
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: ID de l'utilisateur
+ *       - in: query
+ *         name: orderBy
+ *         required: false
+ *         schema:
+ *           type: string
+ *           enum: [createdAt, name]
+ *         description: Champ de tri
+ *       - in: query
+ *         name: descending
+ *         required: false
+ *         schema:
+ *           type: string
+ *           enum: [true, false]
+ *         description: Tri décroissant
+ *     responses:
+ *       200:
+ *         description: Liste des serveurs
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 userId:
+ *                   type: string
+ *                 orderBy:
+ *                   type: string
+ *                 descending:
+ *                   type: boolean
+ *                 servers:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *                     properties:
+ *                       id:
+ *                         type: string
+ *                       ownerId:
+ *                         type: string
+ *                       name:
+ *                         type: string
+ *                       imageUrl:
+ *                         type: string
+ *                         nullable: true
+ *       400:
+ *         description: Paramètre userId manquant
+ *       500:
+ *         description: Erreur serveur
  */
 serversRouter.get("/", async (req, res) => {
   try {
@@ -61,18 +117,67 @@ serversRouter.get("/", async (req, res) => {
 });
 
 /**
- * POST /servers
- * Body:
- * {
- *   "name": "42 Porto",
- *   "ownerId": "uid123",
- *   "imageUrl": "https://...",
- *   "memberIds": ["uid123", "uid456"] // optionnel, par défaut [ownerId]
- * }
+ * @swagger
+ * /servers:
+ *   post:
+ *     summary: Créer un nouveau serveur
+ *     tags: [Servers]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - name
+ *               - ownerId
+ *             properties:
+ *               name:
+ *                 type: string
+ *                 description: Nom du serveur
+ *               ownerId:
+ *                 type: string
+ *                 description: ID du propriétaire
+ *               imageUrl:
+ *                 type: string
+ *                 nullable: true
+ *                 description: URL de l'image du serveur
+ *               memberIds:
+ *                 type: array
+ *                 items:
+ *                   type: string
+ *                 description: IDs des membres (ownerId ajouté automatiquement)
+ *     responses:
+ *       201:
+ *         description: Serveur créé avec succès
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 id:
+ *                   type: string
+ *                 name:
+ *                   type: string
+ *                 ownerId:
+ *                   type: string
+ *                 memberIds:
+ *                   type: array
+ *                   items:
+ *                     type: string
+ *                 imageUrl:
+ *                   type: string
+ *                   nullable: true
+ *                 createdAt:
+ *                   type: object
+ *       400:
+ *         description: Paramètres manquants ou invalides
+ *       500:
+ *         description: Erreur serveur
  */
 serversRouter.post("/", async (req, res) => {
   try {
-    const {name, ownerId, imageUrl, memberIds} = req.body ?? {};
+    const { name, ownerId, imageUrl, memberIds } = req.body ?? {};
 
     if (!name || typeof name !== "string" || name.trim().length === 0) {
       return res.status(400).json({
