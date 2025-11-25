@@ -22,6 +22,17 @@
   - Body : `{name, ownerId, imageUrl?, memberIds?}`
   - Réponse : Serveur créé (201)
 
+- **POST `/servers/:serverId/invite`**
+  - Description : Génère un lien d'invitation pour un serveur
+  - Path params : `serverId`
+  - Body : `{inviterId}`
+  - Réponse : `{hash, serverId, inviterId, inviteLink}` (200)
+
+- **POST `/servers/join`**
+  - Description : Rejoint un serveur via invitation
+  - Body : `{userId, serverId, inviterId?, hash}`
+  - Réponse : Confirmation (200)
+
 ### 3. Channels
 - **GET `/servers/:serverId/channels`**
   - Description : Liste les channels d'un serveur
@@ -73,4 +84,4 @@
 
 ---
 
-**Total : 11 routes (1 health + 2 servers + 2 channels + 3 messages + 3 reactions)**
+**Total : 13 routes (1 health + 4 servers + 2 channels + 3 messages + 3 reactions)**

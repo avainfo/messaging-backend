@@ -125,4 +125,71 @@ async function createServer(params: {
   };
 }
 
-export {getServers, getServersOrderBy, createServer};
+/**
+ * Génère un hash SHA-256 à partir de l'ownerId et du serverId
+ * @param {string} ownerId - L'ID du propriétaire
+ * @param {string} serverId - L'ID du serveur
+ * @return {string} Le hash en hexadécimal
+ */
+function generateInviteHash(ownerId: string, serverId: string): string {
+  const crypto = require("crypto");
+  const data = `${ownerId}${serverId}`;
+  return crypto.createHash("sha256").update(data).digest("hex");
+}
+
+/**
+ * Vérifie qu'un hash correspond à l'ownerId et serverId
+ * @param {string} hash - Le hash à vérifier
+ * @param {string} ownerId - L'ID du propriétaire
+ * @param {string} serverId - L'ID du serveur
+ * @return {boolean} True si le hash est valide
+ */
+function verifyInviteHash(
+  hash: string,
+  ownerId: string,
+  serverId: string
+): boolean {
+  const expectedHash = generateInviteHash(ownerId, serverId);
+  return hash === expectedHash;
+}
+
+/**
+ * Ajoute un utilisateur aux membres d'un serveur
+ * @param {string} serverId - L'ID du serveur
+ * @param {string} userId - L'ID de l'utilisateur à ajouter
+ * @return {Promise<void>}
+ * @throws {Error} Si le serveur n'existe pas
+ */
+async function addMemberToServer(
+  serverId: string,
+  userId: string
+): Promise<void> {
+  const serverRef = db.collection("servers").doc(serverId);
+  const serverDoc = await serverRef.get();
+
+  if (!serverDoc.exists) {
+    throw new Error("Server not found");
+  }
+
+  const serverData = serverDoc.data() as ServerData;
+  const currentMembers = serverData.memberIds || [];
+
+  // Vérifier si l'utilisateur est déjà membre
+  if (currentMembers.includes(userId)) {
+    return; // Déjà membre, ne rien faire
+  }
+
+  // Ajouter le nouveau membre
+  await serverRef.update({
+    memberIds: [...currentMembers, userId],
+  });
+}
+
+export {
+  getServers,
+  getServersOrderBy,
+  createServer,
+  generateInviteHash,
+  verifyInviteHash,
+  addMemberToServer,
+};

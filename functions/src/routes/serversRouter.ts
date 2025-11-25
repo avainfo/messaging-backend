@@ -3,6 +3,8 @@ import {
   createServer,
   getServers,
   getServersOrderBy,
+  generateInviteHash,
+  addMemberToServer,
 } from "../firebase/server-utils";
 
 export const serversRouter: Router = Router();
@@ -205,6 +207,149 @@ serversRouter.post("/", async (req, res) => {
     return res.status(201).json(server);
   } catch (err) {
     console.error("POST /servers error", err);
+    return res.status(500).json({
+      error: true,
+      message: "Internal server error",
+    });
+  }
+});
+
+/**
+ *  @swagger
+ * /servers/{serverId}/invite:
+ *   post:
+ *     summary: Générer un lien d'invitation
+ *     tags: [Servers]
+ *     parameters:
+ *       - in: path
+ *         name: serverId
+ *         required: true
+ *         schema:
+ *           type: string
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - inviterId
+ *             properties:
+ *               inviterId:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: Lien généré
+ *       404:
+ *         description: Serveur non trouvé
+ */
+serversRouter.post("/:serverId/invite", async (req, res) => {
+  try {
+    const { serverId } = req.params as { serverId: string };
+    const { inviterId } = req.body ?? {};
+
+    if (!serverId || !inviterId) {
+      return res.status(400).json({
+        error: "Bad Request",
+        message: "serverId and inviterId are required",
+      });
+    }
+
+    const serverRef = await getServers(inviterId);
+    const server = serverRef.find((s) => s.id === serverId);
+
+    if (!server) {
+      return res.status(404).json({
+        error: "Not Found",
+        message: "Server not found",
+      });
+    }
+
+    const hash = generateInviteHash(server.ownerId, serverId);
+    const inviteLink = `${hash}${serverId}${inviterId}`;
+
+    return res.status(200).json({ hash, serverId, inviterId, inviteLink });
+  } catch (err) {
+    console.error("POST /servers/:serverId/invite error", err);
+    return res.status(500).json({
+      error: true,
+      message: "Internal server error",
+    });
+  }
+});
+
+/**
+ * @swagger
+ * /servers/join:
+ *   post:
+ *     summary: Rejoindre un serveur via invitation
+ *     tags: [Servers]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - userId
+ *               - serverId
+ *               - hash
+ *             properties:
+ *               userId:
+ *                 type: string
+ *               serverId:
+ *                 type: string
+ *               inviterId:
+ *                 type: string
+ *               hash:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: Utilisateur ajouté
+ *       403:
+ *         description: Hash invalide
+ */
+serversRouter.post("/join", async (req, res) => {
+  try {
+    const { userId, serverId, inviterId, hash } = req.body ?? {};
+
+    if (!userId || !serverId || !hash) {
+      return res.status(400).json({
+        error: "Bad Request",
+        message: "userId, serverId, and hash are required",
+      });
+    }
+
+    const { db } = require("../firebase/firebase");
+    const serverDoc = await db.collection("servers").doc(serverId).get();
+
+    if (!serverDoc.exists) {
+      return res.status(404).json({
+        error: "Not Found",
+        message: "Server not found",
+      });
+    }
+
+    const serverData = serverDoc.data();
+    const { verifyInviteHash } = require("../firebase/server-utils");
+
+    if (!verifyInviteHash(hash, serverData.ownerId, serverId)) {
+      return res.status(403).json({
+        error: "Forbidden",
+        message: "Invalid invitation hash",
+      });
+    }
+
+    await addMemberToServer(serverId, userId);
+
+    return res.status(200).json({
+      success: true,
+      message: "Successfully joined server",
+      serverId,
+      inviterId,
+    });
+  } catch (err) {
+    console.error("POST /servers/join error", err);
     return res.status(500).json({
       error: true,
       message: "Internal server error",

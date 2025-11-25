@@ -53,6 +53,8 @@ Vous devez développer une application Flutter qui communique avec ce backend.
 | `/health` | GET | Vérification du statut de l'API |
 | `/servers` | GET | Liste des serveurs (param: `userId`) |
 | `/servers` | POST | Créer un serveur |
+| `/servers/:serverId/invite` | POST | Générer un lien d'invitation |
+| `/servers/join` | POST | Rejoindre via invitation |
 | `/servers/:serverId/channels` | GET | Liste des channels d'un serveur |
 | `/servers/:serverId/channels` | POST | Créer un channel |
 | `/channels/:channelId/messages` | GET | Liste des messages d'un channel |
