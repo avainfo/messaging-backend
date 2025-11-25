@@ -1,9 +1,11 @@
 import request from "supertest";
 import { createApp } from "../app";
 import * as messageUtils from "../firebase/message-utils";
+import * as serverUtils from "../firebase/server-utils";
 
-// Mock the firebase/message-utils module
+// Mock the firebase modules
 jest.mock("../firebase/message-utils");
+jest.mock("../firebase/server-utils");
 
 const app = createApp();
 
@@ -42,9 +44,17 @@ describe("Messages Routes", () => {
         it("should return 400 if content is missing", async () => {
             const res = await request(app)
                 .post("/channels/c1/messages")
-                .send({ authorId: "u1", authorName: "User" });
+                .send({ authorId: "u1", authorName: "User", serverId: "s1" });
             expect(res.status).toBe(400);
             expect(res.body.message).toBe("content is required");
+        });
+
+        it("should return 400 if serverId is missing", async () => {
+            const res = await request(app)
+                .post("/channels/c1/messages")
+                .send({ authorId: "u1", authorName: "User", content: "Hello" });
+            expect(res.status).toBe(400);
+            expect(res.body.message).toBe("serverId is required");
         });
 
         it("should create a message and return 201 with valid data", async () => {
@@ -58,11 +68,13 @@ describe("Messages Routes", () => {
                 createdAt: null,
             };
             (messageUtils.createMessage as jest.Mock).mockResolvedValue(newMessage);
+            (serverUtils.addServerLog as jest.Mock).mockResolvedValue(undefined);
 
             const res = await request(app).post("/channels/c1/messages").send({
                 authorId: "u1",
                 authorName: "User",
                 content: "Hello",
+                serverId: "s1",
             });
 
             expect(res.status).toBe(201);
@@ -83,6 +95,7 @@ describe("Messages Routes", () => {
                 authorId: "u1",
                 authorName: "User",
                 content: "Hello",
+                serverId: "s1",
             });
 
             expect(res.status).toBe(500);

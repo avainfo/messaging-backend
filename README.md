@@ -55,6 +55,7 @@ Vous devez développer une application Flutter qui communique avec ce backend.
 | `/servers` | POST | Créer un serveur |
 | `/servers/:serverId/invite` | POST | Générer un lien d'invitation |
 | `/servers/join` | POST | Rejoindre via invitation |
+| `/servers/:serverId/logs` | GET | Récupérer les logs d'un serveur |
 | `/servers/:serverId/channels` | GET | Liste des channels d'un serveur |
 | `/servers/:serverId/channels` | POST | Créer un channel |
 | `/channels/:channelId/messages` | GET | Liste des messages d'un channel |
@@ -192,10 +193,10 @@ npm test
 ```
 
 **Couverture actuelle :**
-- ✅ 29 tests / 29 passés
+- ✅ 31 tests / 31 passés
 - ✅ Serveurs : GET, POST + cas d'erreur
 - ✅ Channels : GET, POST + cas d'erreur
-- ✅ Messages : GET, POST + cas d'erreur
+- ✅ Messages : GET, POST, DELETE + cas d'erreur
 - ✅ Reactions : GET, POST, DELETE + cas d'erreur
 
 ### 📚 Documentation API

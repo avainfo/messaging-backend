@@ -1,8 +1,18 @@
-import {db} from "./firebase";
-import {firestore} from "firebase-admin";
-import {FieldValue, Timestamp} from "firebase-admin/firestore";
+import { db } from "./firebase";
+import { firestore } from "firebase-admin";
+import { FieldValue, Timestamp } from "firebase-admin/firestore";
 import FieldPath = firestore.FieldPath;
 
+
+export type LogEntry = {
+  id: string;
+  type: "server" | "channel" | "message" | "invitation";
+  action: "created" | "deleted" | "updated" | "joined" | "invited";
+  userId: string;
+  targetId?: string;
+  metadata?: Record<string, unknown>;
+  timestamp: Timestamp | null;
+};
 
 export type ServerData = {
   id: string;
@@ -11,6 +21,7 @@ export type ServerData = {
   memberIds: string[];
   imageUrl: string | null;
   createdAt: Timestamp | null;
+  logs?: LogEntry[];
 };
 
 export type PublicServerResponse = {
@@ -97,7 +108,7 @@ async function createServer(params: {
   imageUrl?: string | null;
   memberIds?: string[];
 }): Promise<ServerData> {
-  const {name, ownerId, imageUrl = null, memberIds = [ownerId]} = params;
+  const { name, ownerId, imageUrl = null, memberIds = [ownerId] } = params;
 
   const serversCol = db.collection("servers");
   const docRef = serversCol.doc();
@@ -185,6 +196,79 @@ async function addMemberToServer(
   });
 }
 
+/**
+ * Ajoute un log à un serveur
+ * @param {string} serverId - L'ID du serveur
+ * @param {Omit<LogEntry, "id" | "timestamp">} logData - Les données du log
+ * @return {Promise<void>}
+ */
+async function addServerLog(
+  serverId: string,
+  logData: Omit<LogEntry, "id" | "timestamp">
+): Promise<void> {
+  const serverRef = db.collection("servers").doc(serverId);
+  const logId = db.collection("_temp").doc().id;
+
+  const logEntry: LogEntry = {
+    id: logId,
+    ...logData,
+    timestamp: null,
+  };
+
+  await serverRef.update({
+    logs: FieldValue.arrayUnion({
+      ...logEntry,
+      timestamp: FieldValue.serverTimestamp(),
+    }),
+  });
+}
+
+/**
+ * Récupère les logs d'un serveur
+ * @param {string} serverId - L'ID du serveur
+ * @param {object} options - Options de filtrage
+ * @param {string} options.type - Filtrer par type
+ * @param {string} options.userId - Filtrer par userId
+ * @param {number} options.limit - Limiter le nombre de résultats
+ * @return {Promise<LogEntry[]>} Les logs du serveur
+ */
+async function getServerLogs(
+  serverId: string,
+  options: { type?: string; userId?: string; limit?: number } = {}
+): Promise<LogEntry[]> {
+  const serverDoc = await db.collection("servers").doc(serverId).get();
+
+  if (!serverDoc.exists) {
+    throw new Error("Server not found");
+  }
+
+  const serverData = serverDoc.data() as ServerData;
+  let logs = serverData.logs || [];
+
+  // Filtrer par type si spécifié
+  if (options.type) {
+    logs = logs.filter((log) => log.type === options.type);
+  }
+
+  // Filtrer par userId si spécifié
+  if (options.userId) {
+    logs = logs.filter((log) => log.userId === options.userId);
+  }
+
+  // Trier par timestamp décroissant (plus récent en premier)
+  logs.sort((a, b) => {
+    if (!a.timestamp || !b.timestamp) return 0;
+    return b.timestamp.toMillis() - a.timestamp.toMillis();
+  });
+
+  // Limiter le nombre de résultats
+  if (options.limit && options.limit > 0) {
+    logs = logs.slice(0, options.limit);
+  }
+
+  return logs;
+}
+
 export {
   getServers,
   getServersOrderBy,
@@ -192,4 +276,6 @@ export {
   generateInviteHash,
   verifyInviteHash,
   addMemberToServer,
+  addServerLog,
+  getServerLogs,
 };

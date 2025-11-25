@@ -4,6 +4,7 @@ import {
     deleteMessage,
     getMessages,
 } from "../firebase/message-utils";
+import { addServerLog } from "../firebase/server-utils";
 
 export const messagesRouter: Router = Router({ mergeParams: true });
 
@@ -96,6 +97,7 @@ messagesRouter.get("/", async (req, res) => {
  *               - authorId
  *               - authorName
  *               - content
+ *               - serverId
  *             properties:
  *               authorId:
  *                 type: string
@@ -110,6 +112,9 @@ messagesRouter.get("/", async (req, res) => {
  *               content:
  *                 type: string
  *                 description: Contenu du message
+ *               serverId:
+ *                 type: string
+ *                 description: ID du serveur (pour logging)
  *     responses:
  *       201:
  *         description: Message créé avec succès
@@ -142,7 +147,8 @@ messagesRouter.get("/", async (req, res) => {
 messagesRouter.post("/", async (req, res) => {
     try {
         const { channelId } = req.params as { channelId: string };
-        const { authorId, authorName, authorAvatarUrl, content } = req.body ?? {};
+        const { authorId, authorName, authorAvatarUrl, content, serverId } =
+            req.body ?? {};
 
         if (!channelId) {
             return res.status(400).json({
@@ -172,11 +178,27 @@ messagesRouter.post("/", async (req, res) => {
             });
         }
 
+        if (!serverId || typeof serverId !== "string") {
+            return res.status(400).json({
+                error: "Bad Request",
+                message: "serverId is required",
+            });
+        }
+
         const message = await createMessage(channelId, {
             authorId,
             authorName,
             authorAvatarUrl: authorAvatarUrl ?? null,
             content: content.trim(),
+        });
+
+        // Log message creation
+        await addServerLog(serverId, {
+            type: "message",
+            action: "created",
+            userId: authorId,
+            targetId: message.id,
+            metadata: { channelId },
         });
 
         return res.status(201).json(message);
@@ -216,10 +238,14 @@ messagesRouter.post("/", async (req, res) => {
  *             type: object
  *             required:
  *               - authorId
+ *               - serverId
  *             properties:
  *               authorId:
  *                 type: string
  *                 description: ID de l'auteur (pour vérification)
+ *               serverId:
+ *                 type: string
+ *                 description: ID du serveur (pour logging)
  *     responses:
  *       200:
  *         description: Message supprimé avec succès
@@ -249,7 +275,7 @@ messagesRouter.delete("/:messageId", async (req, res) => {
             channelId: string;
             messageId: string;
         };
-        const { authorId } = req.body ?? {};
+        const { authorId, serverId } = req.body ?? {};
 
         if (!channelId) {
             return res.status(400).json({
@@ -272,7 +298,23 @@ messagesRouter.delete("/:messageId", async (req, res) => {
             });
         }
 
+        if (!serverId || typeof serverId !== "string") {
+            return res.status(400).json({
+                error: "Bad Request",
+                message: "serverId is required",
+            });
+        }
+
         await deleteMessage(channelId, messageId, authorId);
+
+        // Log message deletion
+        await addServerLog(serverId, {
+            type: "message",
+            action: "deleted",
+            userId: authorId,
+            targetId: messageId,
+            metadata: { channelId },
+        });
 
         return res.status(200).json({
             success: true,

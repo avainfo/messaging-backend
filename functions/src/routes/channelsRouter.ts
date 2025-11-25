@@ -1,5 +1,6 @@
 import { Router } from "express";
 import { createChannel, getChannels } from "../firebase/channel-utils";
+import { addServerLog } from "../firebase/server-utils";
 
 export const channelsRouter: Router = Router({ mergeParams: true });
 
@@ -86,10 +87,14 @@ channelsRouter.get("/", async (req, res) => {
  *             type: object
  *             required:
  *               - name
+ *               - userId
  *             properties:
  *               name:
  *                 type: string
  *                 description: Nom du channel
+ *               userId:
+ *                 type: string
+ *                 description: ID de l'utilisateur créant le channel
  *     responses:
  *       201:
  *         description: Channel créé avec succès
@@ -118,7 +123,7 @@ channelsRouter.get("/", async (req, res) => {
 channelsRouter.post("/", async (req, res) => {
     try {
         const { serverId } = req.params as { serverId: string };
-        const { name } = req.body ?? {};
+        const { name, userId } = req.body ?? {};
 
         if (!serverId) {
             return res.status(400).json({
@@ -134,7 +139,24 @@ channelsRouter.post("/", async (req, res) => {
             });
         }
 
+        if (!userId || typeof userId !== "string") {
+            return res.status(400).json({
+                error: "Bad Request",
+                message: "userId is required",
+            });
+        }
+
         const channel = await createChannel(serverId, name.trim());
+
+        // Log channel creation
+        await addServerLog(serverId, {
+            type: "channel",
+            action: "created",
+            userId,
+            targetId: channel.id,
+            metadata: { channelName: name.trim() },
+        });
+
         return res.status(201).json(channel);
     } catch (err) {
         console.error("POST /servers/:serverId/channels error", err);

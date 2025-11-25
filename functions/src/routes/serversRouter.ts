@@ -5,6 +5,8 @@ import {
   getServersOrderBy,
   generateInviteHash,
   addMemberToServer,
+  addServerLog,
+  getServerLogs,
 } from "../firebase/server-utils";
 
 export const serversRouter: Router = Router();
@@ -204,6 +206,14 @@ serversRouter.post("/", async (req, res) => {
         [ownerId],
     });
 
+    // Log server creation
+    await addServerLog(server.id, {
+      type: "server",
+      action: "created",
+      userId: ownerId,
+      metadata: { serverName: name.trim() },
+    });
+
     return res.status(201).json(server);
   } catch (err) {
     console.error("POST /servers error", err);
@@ -267,6 +277,14 @@ serversRouter.post("/:serverId/invite", async (req, res) => {
 
     const hash = generateInviteHash(server.ownerId, serverId);
     const inviteLink = `${hash}${serverId}${inviterId}`;
+
+    // Log invitation creation
+    await addServerLog(serverId, {
+      type: "invitation",
+      action: "invited",
+      userId: inviterId,
+      metadata: { hash },
+    });
 
     return res.status(200).json({ hash, serverId, inviterId, inviteLink });
   } catch (err) {
@@ -342,6 +360,14 @@ serversRouter.post("/join", async (req, res) => {
 
     await addMemberToServer(serverId, userId);
 
+    // Log user joined
+    await addServerLog(serverId, {
+      type: "invitation",
+      action: "joined",
+      userId,
+      metadata: { inviterId },
+    });
+
     return res.status(200).json({
       success: true,
       message: "Successfully joined server",
@@ -350,6 +376,71 @@ serversRouter.post("/join", async (req, res) => {
     });
   } catch (err) {
     console.error("POST /servers/join error", err);
+    return res.status(500).json({
+      error: true,
+      message: "Internal server error",
+    });
+  }
+});
+
+/**
+ * @swagger
+ * /servers/{serverId}/logs:
+ *   get:
+ *     summary: Récupérer les logs d'un serveur
+ *     tags: [Servers]
+ *     parameters:
+ *       - in: path
+ *         name: serverId
+ *         required: true
+ *         schema:
+ *           type: string
+ *       - in: query
+ *         name: type
+ *         schema:
+ *           type: string
+ *           enum: [server, channel, message, invitation]
+ *       - in: query
+ *         name: userId
+ *         schema:
+ *           type: string
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: integer
+ *           default: 100
+ *     responses:
+ *       200:
+ *         description: Logs récupérés
+ *       404:
+ *         description: Serveur non trouvé
+ */
+serversRouter.get("/:serverId/logs", async (req, res) => {
+  try {
+    const { serverId } = req.params as { serverId: string };
+    const { type, userId, limit } = req.query;
+
+    const logs = await getServerLogs(serverId, {
+      type: type as string | undefined,
+      userId: userId as string | undefined,
+      limit: limit ? parseInt(limit as string) : undefined,
+    });
+
+    return res.status(200).json({
+      serverId,
+      count: logs.length,
+      logs,
+    });
+  } catch (err: unknown) {
+    console.error("GET /servers/:serverId/logs error", err);
+
+    if (err instanceof Error && err.message === "Server not found") {
+      return res.status(404).json({
+        error: "Not Found",
+        message: err.message,
+      });
+    }
+
     return res.status(500).json({
       error: true,
       message: "Internal server error",

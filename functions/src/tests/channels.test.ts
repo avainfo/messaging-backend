@@ -1,9 +1,11 @@
 import request from "supertest";
 import { createApp } from "../app";
 import * as channelUtils from "../firebase/channel-utils";
+import * as serverUtils from "../firebase/server-utils";
 
-// Mock the firebase/channel-utils module
+// Mock the firebase modules
 jest.mock("../firebase/channel-utils");
+jest.mock("../firebase/server-utils");
 
 const app = createApp();
 
@@ -40,9 +42,15 @@ describe("Channels Routes", () => {
 
     describe("POST /servers/:serverId/channels", () => {
         it("should return 400 if name is missing", async () => {
-            const res = await request(app).post("/servers/s1/channels").send({});
+            const res = await request(app).post("/servers/s1/channels").send({ userId: "user1" });
             expect(res.status).toBe(400);
             expect(res.body.message).toBe("name is required");
+        });
+
+        it("should return 400 if userId is missing", async () => {
+            const res = await request(app).post("/servers/s1/channels").send({ name: "General" });
+            expect(res.status).toBe(400);
+            expect(res.body.message).toBe("userId is required");
         });
 
         it("should create a channel and return 201 with valid data", async () => {
@@ -54,10 +62,11 @@ describe("Channels Routes", () => {
                 createdAt: null,
             };
             (channelUtils.createChannel as jest.Mock).mockResolvedValue(newChannel);
+            (serverUtils.addServerLog as jest.Mock).mockResolvedValue(undefined);
 
             const res = await request(app)
                 .post("/servers/s1/channels")
-                .send({ name: "General" });
+                .send({ name: "General", userId: "user1" });
 
             expect(res.status).toBe(201);
             expect(res.body).toEqual(newChannel);
@@ -70,7 +79,7 @@ describe("Channels Routes", () => {
 
             const res = await request(app)
                 .post("/servers/s1/channels")
-                .send({ name: "General" });
+                .send({ name: "General", userId: "user1" });
 
             expect(res.status).toBe(500);
             expect(res.body).toEqual({

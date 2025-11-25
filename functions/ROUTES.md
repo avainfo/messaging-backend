@@ -33,6 +33,15 @@
   - Body : `{userId, serverId, inviterId?, hash}`
   - Réponse : Confirmation (200)
 
+- **GET `/servers/:serverId/logs`**
+  - Description : Récupère les logs d'un serveur
+  - Path params : `serverId`
+  - Query params (optionnels) :
+    - `type` : Filtrer par type (server, channel, message, invitation)
+    - `userId` : Filtrer par utilisateur
+    - `limit` : Limiter le nombre de résultats (default: 100)
+  - Réponse : `{serverId, count, logs[]}` (200)
+
 ### 3. Channels
 - **GET `/servers/:serverId/channels`**
   - Description : Liste les channels d'un serveur
@@ -42,7 +51,7 @@
 - **POST `/servers/:serverId/channels`**
   - Description : Crée un nouveau channel
   - Path params : `serverId`
-  - Body : `{name}`
+  - Body : `{name, userId}` ⚠️ userId requis pour logging
   - Réponse : Channel créé (201)
 
 ### 4. Messages
@@ -54,13 +63,13 @@
 - **POST `/channels/:channelId/messages`**
   - Description : Envoie un nouveau message
   - Path params : `channelId`
-  - Body : `{authorId, authorName, authorAvatarUrl?, content}`
+  - Body : `{authorId, authorName, authorAvatarUrl?, content, serverId}` ⚠️ serverId requis pour logging
   - Réponse : Message créé (201)
 
 - **DELETE `/channels/:channelId/messages/:messageId`**
   - Description : Supprime un message
   - Path params : `channelId`, `messageId`
-  - Body : `{authorId}` (pour vérification)
+  - Body : `{authorId, serverId}` ⚠️ serverId requis pour logging
   - Réponse : Confirmation (200)
 
 
@@ -84,4 +93,4 @@
 
 ---
 
-**Total : 13 routes (1 health + 4 servers + 2 channels + 3 messages + 3 reactions)**
+**Total : 14 routes (1 health + 5 servers + 2 channels + 3 messages + 3 reactions)**
