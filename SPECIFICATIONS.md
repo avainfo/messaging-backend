@@ -89,7 +89,8 @@ Voici les routes que vous devez appeler depuis Flutter :
 | **GET `/servers/:serverId/channels`**    | Liste des channels                  | Afficher les channels d'un serveur                           |
 | **POST `/servers/:serverId/channels`**   | Création d'un channel               | Envoyer `{ name }`                                     |
 | **GET `/channels/:channelId/messages`**  | Récupérer les messages d'un channel | Afficher l'historique + pagination si nécessaire             |
-| **POST `/channels/:channelId/messages`** | Envoyer un message                  | Envoyer `{ authorId, authorName, authorAvatarUrl, content }` |
+| **POST `/channels/:channelId/messages`** | Envoyer un message                  | Envoyer `{authorId, authorName, authorAvatarUrl, content}` |
+| **DELETE `/channels/:channelId/messages/:messageId`** | Supprimer un message        | Envoyer `{authorId}` pour vérification                     |
 | **GET `/messages/:messageId/reactions`** | Liste des réactions d'un message    | Afficher les réactions groupées par emoji                    |
 | **POST `/messages/:messageId/reactions`** | Ajouter une réaction               | Envoyer `{ userId, emoji }`                                  |
 | **DELETE `/messages/:messageId/reactions`** | Supprimer une réaction          | Envoyer `{ userId, emoji }`                                  |

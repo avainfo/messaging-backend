@@ -11,6 +11,11 @@ export type MessageData = {
     createdAt: Timestamp | null;
 };
 
+/**
+ * Map Firestore document to MessageData
+ * @param {FirebaseFirestore.DocumentSnapshot} doc - Document snapshot
+ * @return {MessageData} Mapped message data
+ */
 function mapMessageDoc(doc: FirebaseFirestore.DocumentSnapshot): MessageData {
     const data = doc.data() as MessageData;
     return {
@@ -27,7 +32,7 @@ function mapMessageDoc(doc: FirebaseFirestore.DocumentSnapshot): MessageData {
 /**
  * Retrieves the list of messages for a specific channel.
  * @param {string} channelId - The ID of the channel.
- * @return {Promise<MessageData[]>} A promise that resolves to an array of messages.
+ * @return {Promise<MessageData[]>} Messages array
  */
 async function getMessages(channelId: string): Promise<MessageData[]> {
     const messages = await db
@@ -91,4 +96,38 @@ async function createMessage(
     };
 }
 
-export { getMessages, createMessage };
+/**
+ * Supprime un message d'un channel avec vérification de l'auteur
+ * @param {string} channelId - L'ID du channel
+ * @param {string} messageId - L'ID du message
+ * @param {string} authorId - L'ID de l'auteur (pour vérification)
+ * @return {Promise<void>}
+ * @throws {Error} Si le message n'existe pas ou si l'authorId ne correspond pas
+ */
+async function deleteMessage(
+    channelId: string,
+    messageId: string,
+    authorId: string
+): Promise<void> {
+    const messageRef = db
+        .collection("channels")
+        .doc(channelId)
+        .collection("messages")
+        .doc(messageId);
+
+    const messageDoc = await messageRef.get();
+
+    if (!messageDoc.exists) {
+        throw new Error("Message not found");
+    }
+
+    const messageData = messageDoc.data() as MessageData;
+
+    if (messageData.authorId !== authorId) {
+        throw new Error("Unauthorized: You can only delete your own messages");
+    }
+
+    await messageRef.delete();
+}
+
+export { getMessages, createMessage, deleteMessage };

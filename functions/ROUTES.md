@@ -46,6 +46,13 @@
   - Body : `{authorId, authorName, authorAvatarUrl?, content}`
   - Réponse : Message créé (201)
 
+- **DELETE `/channels/:channelId/messages/:messageId`**
+  - Description : Supprime un message
+  - Path params : `channelId`, `messageId`
+  - Body : `{authorId}` (pour vérification)
+  - Réponse : Confirmation (200)
+
+
 ### 5. Reactions
 - **GET `/messages/:messageId/reactions`**
   - Description : Liste les réactions d'un message groupées par emoji
@@ -66,4 +73,4 @@
 
 ---
 
-**Total : 10 routes (1 health + 2 servers + 2 channels + 2 messages + 3 reactions)**
+**Total : 11 routes (1 health + 2 servers + 2 channels + 3 messages + 3 reactions)**

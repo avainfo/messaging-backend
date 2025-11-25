@@ -1,5 +1,9 @@
 import { Router } from "express";
-import { createMessage, getMessages } from "../firebase/message-utils";
+import {
+    createMessage,
+    deleteMessage,
+    getMessages,
+} from "../firebase/message-utils";
 
 export const messagesRouter: Router = Router({ mergeParams: true });
 
@@ -178,6 +182,120 @@ messagesRouter.post("/", async (req, res) => {
         return res.status(201).json(message);
     } catch (err) {
         console.error("POST /channels/:channelId/messages error", err);
+        return res.status(500).json({
+            error: true,
+            message: "Internal server error",
+        });
+    }
+});
+
+/**
+ * @swagger
+ * /channels/{channelId}/messages/{messageId}:
+ *   delete:
+ *     summary: Supprimer un message
+ *     tags: [Messages]
+ *     parameters:
+ *       - in: path
+ *         name: channelId
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: ID du channel
+ *       - in: path
+ *         name: messageId
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: ID du message
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - authorId
+ *             properties:
+ *               authorId:
+ *                 type: string
+ *                 description: ID de l'auteur (pour vérification)
+ *     responses:
+ *       200:
+ *         description: Message supprimé avec succès
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 message:
+ *                   type: string
+ *                   example: Message deleted successfully
+ *       400:
+ *         description: Paramètres manquants
+ *       403:
+ *         description: Non autorisé (pas le propriétaire du message)
+ *       404:
+ *         description: Message non trouvé
+ *       500:
+ *         description: Erreur serveur
+ */
+messagesRouter.delete("/:messageId", async (req, res) => {
+    try {
+        const { channelId, messageId } = req.params as {
+            channelId: string;
+            messageId: string;
+        };
+        const { authorId } = req.body ?? {};
+
+        if (!channelId) {
+            return res.status(400).json({
+                error: "Bad Request",
+                message: "channelId is required",
+            });
+        }
+
+        if (!messageId) {
+            return res.status(400).json({
+                error: "Bad Request",
+                message: "messageId is required",
+            });
+        }
+
+        if (!authorId || typeof authorId !== "string") {
+            return res.status(400).json({
+                error: "Bad Request",
+                message: "authorId is required",
+            });
+        }
+
+        await deleteMessage(channelId, messageId, authorId);
+
+        return res.status(200).json({
+            success: true,
+            message: "Message deleted successfully",
+        });
+    } catch (err: unknown) {
+        console.error("DELETE /channels/:channelId/messages/:messageId error", err);
+
+        if (err instanceof Error) {
+            if (err.message === "Message not found") {
+                return res.status(404).json({
+                    error: "Not Found",
+                    message: err.message,
+                });
+            }
+            if (err.message.includes("Unauthorized")) {
+                return res.status(403).json({
+                    error: "Forbidden",
+                    message: err.message,
+                });
+            }
+        }
+
         return res.status(500).json({
             error: true,
             message: "Internal server error",

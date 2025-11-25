@@ -57,6 +57,7 @@ Vous devez développer une application Flutter qui communique avec ce backend.
 | `/servers/:serverId/channels` | POST | Créer un channel |
 | `/channels/:channelId/messages` | GET | Liste des messages d'un channel |
 | `/channels/:channelId/messages` | POST | Envoyer un message |
+| `/channels/:channelId/messages/:messageId` | DELETE | Supprimer un message |
 | `/messages/:messageId/reactions` | GET | Liste des réactions d'un message |
 | `/messages/:messageId/reactions` | POST | Ajouter une réaction |
 | `/messages/:messageId/reactions` | DELETE | Supprimer une réaction |
