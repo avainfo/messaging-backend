@@ -8,7 +8,18 @@
   - Paramètres : Aucun
   - Réponse : Statut de Firebase Admin, Firestore et timestamp
 
-### 2. Servers (Serveurs)
+### 2. Users (Utilisateurs)
+- **POST `/users`**
+  - Description : Crée ou met à jour un utilisateur (upsert)
+  - Body : `{userId, username, profilePhotoUrl?}`
+  - Réponse : Utilisateur créé/mis à jour (200)
+
+- **GET `/users/:userId`**
+  - Description : Récupère un utilisateur par son ID
+  - Path params : `userId`
+  - Réponse : Profil utilisateur (200) ou 404
+
+### 3. Servers (Serveurs)
 - **GET `/servers`**
   - Description : Liste les serveurs d'un utilisateur
   - Query params : 
@@ -93,4 +104,4 @@
 
 ---
 
-**Total : 14 routes (1 health + 5 servers + 2 channels + 3 messages + 3 reactions)**
+**Total : 16 routes (1 health + 2 users + 5 servers + 2 channels + 3 messages + 3 reactions)**

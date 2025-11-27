@@ -51,6 +51,8 @@ Vous devez développer une application Flutter qui communique avec ce backend.
 | Endpoint | Méthode | Description |
 |----------|---------|-------------|
 | `/health` | GET | Vérification du statut de l'API |
+| `/users` | POST | Créer ou mettre à jour un utilisateur |
+| `/users/:userId` | GET | Récupérer un utilisateur |
 | `/servers` | GET | Liste des serveurs (param: `userId`) |
 | `/servers` | POST | Créer un serveur |
 | `/servers/:serverId/invite` | POST | Générer un lien d'invitation |
@@ -68,7 +70,8 @@ Vous devez développer une application Flutter qui communique avec ce backend.
 ### 💡 Ce que Vous Devez Faire
 
 - ✅ Mettre en place Firebase Authentication (votre propre projet Firebase)
-- ✅ Créer les modèles de données (`Server`, `Channel`, `Message`)
+- ✅ **Appeler POST /users après inscription/connexion pour enregistrer les utilisateurs**
+- ✅ Créer les modèles de données (`Server`, `Channel`, `Message`, `User`)
 - ✅ Implémenter un service API pour consommer les endpoints
 - ✅ Développer les écrans : serveurs, channels, chat, profil
 - ✅ Gérer la navigation entre les écrans
@@ -79,7 +82,8 @@ Vous devez développer une application Flutter qui communique avec ce backend.
 
 - Utilisez Firebase Auth avec **votre propre projet Firebase**
 - Récupérez le `uid` de l'utilisateur connecté
-- Utilisez ce `uid` comme `authorId` ou `ownerId` dans vos requêtes API
+- **Appelez POST /users pour enregistrer/synchroniser le profil utilisateur**
+- Utilisez ce `uid` comme `userId`, `authorId` ou `ownerId` dans vos requêtes API
 - **Aucun token n'est requis** pour les appels API du backend
 
 ---
@@ -193,7 +197,8 @@ npm test
 ```
 
 **Couverture actuelle :**
-- ✅ 31 tests / 31 passés
+- ✅ 39 tests / 39 passés
+- ✅ Users : POST, GET + cas d'erreur
 - ✅ Serveurs : GET, POST + cas d'erreur
 - ✅ Channels : GET, POST + cas d'erreur
 - ✅ Messages : GET, POST, DELETE + cas d'erreur

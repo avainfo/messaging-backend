@@ -20,6 +20,10 @@ const options: swaggerJsdoc.Options = {
         description: "Health check endpoint",
       },
       {
+        name: "Users",
+        description: "Gestion des utilisateurs",
+      },
+      {
         name: "Servers",
         description: "Gestion des serveurs de messagerie",
       },

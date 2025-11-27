@@ -3,8 +3,12 @@ import { serversRouter } from "./serversRouter";
 import { channelsRouter } from "./channelsRouter";
 import { messagesRouter } from "./messagesRouter";
 import { reactionsRouter } from "./reactionsRouter";
+import { usersRouter } from "./usersRouter";
 
 export const router = Router();
+
+// /users...
+router.use("/users", usersRouter);
 
 // /servers...
 router.use("/servers", serversRouter);

@@ -42,6 +42,41 @@ Votre app doit permettre :
 * récupération du `uid` Firebase
   → utilisé comme `authorId` dans l'API
 
+**⚠️ IMPORTANT : Enregistrement des Utilisateurs**
+
+À chaque fois qu'un utilisateur s'inscrit OU met à jour son profil, vous **devez** appeler :
+**POST /users**
+
+**Quand appeler cette route ?**
+
+* ✅ Après une inscription réussie
+* ✅ Après une connexion (pour synchroniser le profil)
+* ✅ Après une modification du `displayName`
+* ✅ Après une modification de la photo de profil
+
+**Exemple Flutter :**
+
+```dart
+// Après authentification Firebase
+final user = FirebaseAuth.instance.currentUser;
+
+// Appeler POST /users pour enregistrer/synchroniser
+final response = await http.post(
+  Uri.parse('$baseUrl/users'),
+  headers: {'Content-Type': 'application/json'},
+  body: json.encode({
+    'userId': user.uid,
+    'username': user.displayName ?? 'Anonymous',
+    'profilePhotoUrl': user.photoURL,
+  }),
+);
+```
+
+**Ce que fait cette route :**
+
+* Si l'utilisateur n'existe pas → le crée
+* Si l'utilisateur existe → met à jour son profil
+
 ---
 
 ### ✔️ 2. Navigation Principale
@@ -84,6 +119,8 @@ Voici les routes que vous devez appeler depuis Flutter :
 | Méthode + Route                          | Action                              | Ce que votre app doit faire                                  |
 | ---------------------------------------- | ----------------------------------- | ------------------------------------------------------------ |
 | **GET `/health`**                        | Ping API                            | Appeler une fois pour tester la connexion                    |
+| **POST `/users`**                        | Créer/mettre à jour utilisateur     | Envoyer `{ userId, username, profilePhotoUrl? }`             |
+| **GET `/users/:userId`**                 | Récupérer un utilisateur            | Afficher le profil utilisateur                               |
 | **GET `/servers`**                       | Liste des serveurs                  | Récupérer et afficher les serveurs                           |
 | **POST `/servers`**                      | Création d'un serveur               | Envoyer `{ name, ownerId }`                                  |
 | **POST `/servers/:serverId/invite`**     | Générer une invitation              | Envoyer `{ inviterId }`                                      |
@@ -180,6 +217,7 @@ Votre application doit être :
 Votre application doit contenir **au minimum** :
 
 - ✅ Auth Firebase (login / signup)
+- ✅ **Enregistrement utilisateur (POST /users)**
 - ✅ Liste des serveurs
 - ✅ Création serveur
 - ✅ Liste des channels
@@ -207,10 +245,11 @@ Votre application doit contenir **au minimum** :
 ## 💡 Conseils
 
 1. **Commencez par tester l'API** avec les exemples du fichier [TESTING.md](TESTING.md)
-2. **Créez vos modèles de données** avant de faire les appels API
-3. **Implémentez l'authentification en premier** pour avoir un `userId` à utiliser
-4. **Testez chaque endpoint** individuellement avant de les intégrer dans l'UI
-5. **Structurez votre code dès le début** pour faciliter la maintenance
+2. **Implémentez l'authentification en premier** pour avoir un `userId` à utiliser
+3. **Appelez POST /users après chaque authentification** pour synchroniser les profils
+4. **Créez vos modèles de données** avant de faire les appels API
+5. **Testez chaque endpoint** individuellement avant de les intégrer dans l'UI
+6. **Structurez votre code dès le début** pour faciliter la maintenance
 
 ---
 
