@@ -212,14 +212,11 @@ async function addServerLog(
   const logEntry: LogEntry = {
     id: logId,
     ...logData,
-    timestamp: null,
+    timestamp: Timestamp.now(),
   };
 
   await serverRef.update({
-    logs: FieldValue.arrayUnion({
-      ...logEntry,
-      timestamp: FieldValue.serverTimestamp(),
-    }),
+    logs: FieldValue.arrayUnion(logEntry),
   });
 }
 
