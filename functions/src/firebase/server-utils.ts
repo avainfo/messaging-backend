@@ -29,6 +29,7 @@ export type PublicServerResponse = {
   ownerId: string;
   name: string;
   imageUrl: string | null;
+  memberIds: string[] | null;
 };
 
 /**
@@ -46,6 +47,7 @@ function mapServerDoc(
     ownerId: data.ownerId,
     name: data.name,
     imageUrl: data.imageUrl ?? null,
+    memberIds: data.memberIds ?? null,
   };
 }
 
