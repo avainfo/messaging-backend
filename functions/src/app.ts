@@ -6,6 +6,7 @@ import swaggerUi from "swagger-ui-express";
 import { swaggerSpec } from "./config/swagger";
 import { router } from "./routes";
 import { errorHandler } from "./middlewares/errorHandler";
+import { validateFirebaseIdToken } from "./middlewares/auth";
 import * as admin from "firebase-admin";
 import { db } from "./firebase/firebase";
 
@@ -78,6 +79,8 @@ export function createApp() {
   });
 
   // Routes API
+  // Security: Verify Firebase Token for all API routes
+  app.use(validateFirebaseIdToken);
   app.use("/", router);
 
   // Error Middleware

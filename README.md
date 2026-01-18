@@ -1,233 +1,103 @@
-# 📘 Messaging Backend - Projet Pédagogique Flutter
+# Messaging Backend API
+#### Video Demo: [INSERT VIDEO LINK HERE]
 
-## 🎯 Contexte du Projet
+## Overview
 
-Ce projet est un **backend de messagerie inspiré de Discord**, conçu dans un cadre pédagogique pour l'apprentissage du développement mobile avec Flutter.
+This project is a comprehensive backend API designed to power a Discord-like messaging application. Built using **Node.js**, **Express.js**, and **Firebase**, it serves as the foundational infrastructure for a real-time chat platform. The application provides a robust set of endpoints that allow users to manage their profiles, create and manage servers (similar to Discord guilds), organize conversations into channels, and exchange messages in real-time.
 
-### 🔵 Architecture du Projet
+The core philosophy behind this project was to create a scalable, serverless solution that could handle the complexities of a social platform without the overhead of managing physical servers. By leveraging Firebase Cloud Functions and Firestore, the application achieves high availability and automatic scaling.
 
-Le projet est divisé en deux parties distinctes :
+## Motivation
 
-#### **Backend (que je fournis)**
-- API REST complète basée sur Firebase Cloud Functions
-- Base de données Firestore structurée
-- Gestion des serveurs, channels et messages
-- Déploiement centralisé : **un seul backend pour tous mes étudiants**
+I am a software development instructor, and I built this project to serve as the backend infrastructure for my students. The goal was to provide them with a working, realistic API so they could focus purely on building the frontend mobile application (a simplified Discord clone) using Flutter.
 
-#### **Frontend Flutter (à développer par mes étudiants)**
-- Application mobile complète
-- Authentification Firebase (projet Firebase personnel de chaque étudiant)
-- Interface utilisateur et navigation
-- Consommation de l'API REST que je fournis
-- Gestion d'état et architecture propre
+I wanted my students to learn how to:
+*   **Consume REST APIs**: Make valid HTTP requests and handle responses.
+*   **Manage Application State**: Handle data flow in a mobile app.
+*   **Understand Client-Server Architecture**: See clearly where their responsibility ends and the server's begins.
 
----
+This project solves a practical teaching problem: it removes the blockage of needing to build a backend before learning frontend development. It provides a "black box" that works reliably, allowing students to iterate on their UI/UX.
 
-## 🎓 Pour les Étudiants
+### Security Note (Pedagogical Choice)
+### Security Note
+Authentication is enforced using Firebase Auth. All API requests must include a valid Firebase ID Token in the `Authorization` header (`Bearer <token>`). This ensures that only authenticated users can access the endpoints.
 
-Vous devez développer une application Flutter qui communique avec ce backend.
+## Technical Architecture
 
-### 📚 Documentation à Consulter
+The project is built on a modern JavaScript stack:
 
-1. **[SPECIFICATIONS.md](SPECIFICATIONS.md)** : Cahier des charges complet avec :
-   - Les fonctionnalités à implémenter
-   - La structure de données Firestore
-   - Les endpoints de l'API à consommer
-   - Les contraintes techniques
+*   **Runtime**: Node.js (v18)
+*   **Framework**: Express.js
+*   **Cloud Provider**: Google Firebase (Cloud Functions)
+*   **Database**: Cloud Firestore (NoSQL)
+*   **Testing**: Jest + Supertest
 
-2. **[TESTING.md](TESTING.md)** : Guide de test de l'API avec :
-   - Exemples de requêtes pour tous les endpoints
-   - Cas de succès et d'erreur
-   - Commandes curl et PowerShell prêtes à l'emploi
+### Design Pattern: Service-Controller-Route
 
-### 🚀 URL de l'API
+I implemented a clear separation of concerns using a layered architecture:
+1.  **Routes Layer (`src/routes/`)**: Defines the HTTP endpoints and maps them to specific logic. This layer handles the request/response cycle, input validation, and HTTP status codes.
+2.  **Utils/Service Layer (`src/firebase/`)**: Contains the core business logic and direct interactions with the Firestore database. This separation ensures that the database logic is reusable and testable independently of the HTTP layer.
 
-**Base URL :** `https://us-central1-messaging-backend-m2i.cloudfunctions.net/api`
+### Database Schema
 
-**Documentation Swagger :** `https://us-central1-messaging-backend-m2i.cloudfunctions.net/api/docs`
+One of the most interesting challenges was designing the Firestore schema. Unlike a SQL database where normalization is key, Firestore often requires denormalization to reduce the number of reads.
 
-### 📡 Endpoints Disponibles
+*   **Users**: Stored as root-level documents.
+*   **Servers**: Root-level collection. Each server contains metadata (name, owner).
+*   **Channels**: Root-level collection for easier querying independent of servers, though logically linked to them.
+*   **Messages**: Stored as a *sub-collection* of Channels. This was a crucial design decision. By nesting messages within channels (`channels/{channelId}/messages`), I ensure that queries for messages are scoped automatically to their parent channel, improving performance and security.
 
-| Endpoint | Méthode | Description |
-|----------|---------|-------------|
-| `/health` | GET | Vérification du statut de l'API |
-| `/users` | POST | Créer ou mettre à jour un utilisateur |
-| `/users/:userId` | GET | Récupérer un utilisateur |
-| `/servers` | GET | Liste des serveurs (param: `userId`) |
-| `/servers` | POST | Créer un serveur |
-| `/servers/:serverId/invite` | POST | Générer un lien d'invitation |
-| `/servers/join` | POST | Rejoindre via invitation |
-| `/servers/:serverId/logs` | GET | Récupérer les logs d'un serveur |
-| `/servers/:serverId/channels` | GET | Liste des channels d'un serveur |
-| `/servers/:serverId/channels` | POST | Créer un channel |
-| `/channels/:channelId/messages` | GET | Liste des messages d'un channel |
-| `/channels/:channelId/messages` | POST | Envoyer un message |
-| `/channels/:channelId/messages/:messageId` | DELETE | Supprimer un message |
-| `/messages/:messageId/reactions` | GET | Liste des réactions d'un message |
-| `/messages/:messageId/reactions` | POST | Ajouter une réaction |
-| `/messages/:messageId/reactions` | DELETE | Supprimer une réaction |
+### Key Features Implemented
 
-### 💡 Ce que Vous Devez Faire
+1.  **User Management**: Users can sign up and manage their profiles. The system integrates with Firebase Authentication (managed on the client side) but maintains a synchronized User record in Firestore for application-specific data.
+2.  **Server Management**: Users can create servers, generating a unique space for communities.
+3.  **Invitation System**: I implemented a secure invitation system. Server owners can generate unique, hashed invitation links (`/servers/:serverId/invite`). When a user attempts to join via a link, the backend validates the hash to prevent unauthorized access.
+4.  **Channels & Messaging**: Support for creating multiple channels within a server and sending text messages.
+5.  **Reactions**: A fun feature allowing users to react to messages with emojis.
 
-- ✅ Mettre en place Firebase Authentication (votre propre projet Firebase)
-- ✅ **Appeler POST /users après inscription/connexion pour enregistrer les utilisateurs**
-- ✅ Créer les modèles de données (`Server`, `Channel`, `Message`, `User`)
-- ✅ Implémenter un service API pour consommer les endpoints
-- ✅ Développer les écrans : serveurs, channels, chat, profil
-- ✅ Gérer la navigation entre les écrans
-- ✅ Utiliser une solution de gestion d'état (Provider, Riverpod, Bloc...)
-- ✅ Créer une interface utilisateur agréable et responsive
+## Challenges and Learning
 
-### 🔐 Authentification
+The journey was not without its hurdles. One significant challenge was **managing asynchronous code**. Node.js is single-threaded and event-driven, meaning that database operations are non-blocking. I had to master `async/await` patterns to ensure that the API responded only after data was successfully written or retrieved. Early on, I faced issues where the API would return a 200 OK response before the data was actually saved to Firestore, leading to "ghost" data issues.
 
-- Utilisez Firebase Auth avec **votre propre projet Firebase**
-- Récupérez le `uid` de l'utilisateur connecté
-- **Appelez POST /users pour enregistrer/synchroniser le profil utilisateur**
-- Utilisez ce `uid` comme `userId`, `authorId` ou `ownerId` dans vos requêtes API
-- **Aucun token n'est requis** pour les appels API du backend
+Another challenge was **NoSQL Data Modeling**. Coming from a SQL background, my instinct was to use joins. Firestore doesn't support server-side joins in the traditional sense. I had to learn to perform application-side joins or structure the data (like using arrays of IDs) to allow for efficient fetching. For example, when fetching a server, I initially struggled to get the member list efficiently. I solved this by storing a `memberIds` array on the Server document itself, allowing me to check membership with a simple array-contains query.
 
----
+## Installation and Usage
 
-## 👨‍🏫 Notes Techniques (Formateur)
+To run this project locally, you need Node.js and the Firebase CLI installed.
 
-### 🛠️ Technologies Utilisées
+1.  **Clone the repository**:
+    ```bash
+    git clone https://github.com/StartZ-10517/cs50-final-project
+    cd messaging-backend/functions
+    ```
 
-- **Runtime** : Node.js 18
-- **Framework** : Express.js
-- **Cloud** : Firebase Cloud Functions
-- **Base de données** : Firestore
-- **Documentation API** : Swagger UI (disponible sur `/docs`)
-- **Tests** : Jest + Supertest
+2.  **Install Dependencies**:
+    ```bash
+    npm install
+    ```
 
-### 📦 Installation Locale
+3.  **Set up Firebase**:
+    You will need a `serviceAccountKey.json` file from your Firebase console in the `src/` directory to run efficiently locally, or rely on `firebase login`.
 
-```bash
-# Installer les dépendances
-cd functions
-npm install
+4.  **Run Locally**:
+    ```bash
+    npm run start
+    ```
+    This launches the Firebase Emulator Suite, allowing you to test endpoints at `http://localhost:5001/...`.
 
-# Lancer l'émulateur local
-npm run start
+5.  **Run Tests**:
+    ```bash
+    npm test
+    ```
+    This project maintains high test coverage using Jest.
 
-# Lancer les tests
-npm test
+## AI Statement
 
-# Linter le code
-npm run lint
-```
+I certify that I have written the code for this project myself. I used AI assistance solely for the purpose of translating and refining the English text of this README file to ensure clarity and improved grammar. The logic, architecture, and implementation are my own work.
 
-### 🚀 Déploiement
+## Future Improvements
 
-```bash
-# Build du projet
-cd functions
-npm run build
-
-# Déploiement sur Firebase
-firebase deploy --only functions
-```
-
-### 📊 Structure du Projet
-
-```
-messaging-backend/
-├── functions/
-│   ├── src/
-│   │   ├── app.ts                    # Configuration Express
-│   │   ├── index.ts                  # Entry point Cloud Functions
-│   │   ├── config/                   # Configuration (Swagger, env)
-│   │   ├── firebase/                 #Utils Firestore
-│   │   │   ├── firebase.ts          # Initialisation Firebase Admin
-│   │   │   ├── server-utils.ts      # CRUD serveurs
-│   │   │   ├── channel-utils.ts     # CRUD channels
-│   │   │   └── message-utils.ts     # CRUD messages
-│   │   ├── middlewares/              # Error handler
-│   │   ├── routes/                   # Routers Express
-│   │   │   ├── index.ts             # Router principal
-│   │   │   ├── serversRouter.ts     # Routes /servers
-│   │   │   ├── channelsRouter.ts    # Routes /channels
-│   │   │   └── messagesRouter.ts    # Routes /messages
-│   │   └── tests/                    # Tests unitaires
-│   ├── package.json
-│   └── tsconfig.json
-├── SPECIFICATIONS.md                  # Cahier des charges étudiants
-├── TESTING.md                         # Guide de test de l'API
-└── README.md                          # Ce fichier
-```
-
-### 🗄️ Structure Firestore
-
-```
-firestore-root
-│
-├── servers (collection)
-│   └── {serverId} (document)
-│       ├── id: string
-│       ├── name: string
-│       ├── ownerId: string
-│       ├── memberIds: string[]
-│       ├── imageUrl: string | null
-│       └── createdAt: Timestamp
-│
-├── channels (collection)
-│   └── {channelId} (document)
-│       ├── id: string
-│       ├── serverId: string
-│       ├── name: string
-│       ├── type: "text"
-│       └── createdAt: Timestamp
-│
-└── channels/{channelId}/messages (subcollection)
-    └── {messageId} (document)
-        ├── id: string
-        ├── channelId: string
-        ├── authorId: string
-        ├── authorName: string
-        ├── authorAvatarUrl: string | null
-        ├── content: string
-        └── createdAt: Timestamp
-```
-
-### 🧪 Tests
-
-Le projet inclut des tests unitaires pour tous les endpoints :
-
-```bash
-npm test
-```
-
-**Couverture actuelle :**
-- ✅ 39 tests / 39 passés
-- ✅ Users : POST, GET + cas d'erreur
-- ✅ Serveurs : GET, POST + cas d'erreur
-- ✅ Channels : GET, POST + cas d'erreur
-- ✅ Messages : GET, POST, DELETE + cas d'erreur
-- ✅ Reactions : GET, POST, DELETE + cas d'erreur
-
-### 📚 Documentation API
-
-Une fois déployé, l'API Swagger est disponible sur :
-```
-https://[BASE_URL]/docs
-```
-
----
-
-## 🎯 Objectifs Pédagogiques
-
-Ce projet permet aux étudiants de :
-
-- 📱 Développer une application Flutter complète de A à Z
-- 🔌 Consommer une API REST réelle
-- 🔐 Intégrer Firebase Authentication
-- 🏗️ Structurer proprement une application mobile
-- 🎨 Créer une interface utilisateur moderne
-- 📊 Gérer l'état de l'application
-- 🧪 Tester leurs requêtes HTTP
-- 🚀 Travailler dans un contexte proche de la réalité professionnelle
-
----
-
-## 📄 Licence
-
-Projet pédagogique - Usage éducatif uniquement
+If I had more time, I would like to implement:
+*   **WebSockets**: Currently, the API is REST-based. For a chat app, real-time sockets (like Socket.io) would provide a snappier experience than polling.
+*   **Media Support**: Adding the ability to upload images/files to Firebase Storage and link them in messages.
+*   **Direct Messages (DMs)**: Private conversations between two users outside of a server context.
