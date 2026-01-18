@@ -9,14 +9,11 @@ The core philosophy behind this project was to create a scalable, serverless sol
 
 ## Motivation
 
-I am a software development instructor, and I built this project to serve as the backend infrastructure for my students. The goal was to provide them with a working, realistic API so they could focus purely on building the frontend mobile application (a simplified Discord clone) using Flutter.
+For my CS50x Final Project, I decided to build a tool that addresses a specific pain point I encounter in my professional life as a software development instructor.
 
-I wanted my students to learn how to:
-*   **Consume REST APIs**: Make valid HTTP requests and handle responses.
-*   **Manage Application State**: Handle data flow in a mobile app.
-*   **Understand Client-Server Architecture**: See clearly where their responsibility ends and the server's begins.
+My goal was to create a robust, pedagogical backend infrastructure that I can use with my future students. Often, beginners struggle to build full-stack apps because the backend learning curve is too steep. This project provides a realistic, working API that allows frontend students to focus on UI/UX and state management without getting blocked by server-side complexities.
 
-This project solves a practical teaching problem: it removes the blockage of needing to build a backend before learning frontend development. It provides a "black box" that works reliably, allowing students to iterate on their UI/UX.
+By building this during CS50x, I challenged myself to implement a production-grade architecture (Service-Controller pattern, swagger docs, rigorous testing) that serves as both a functional tool and a reference implementation.
 
 ### Security Note (Pedagogical Choice)
 ### Security Note
