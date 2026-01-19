@@ -1,5 +1,5 @@
 # Messaging Backend API
-#### Video Demo: [INSERT VIDEO LINK HERE]
+#### Video Demo: [youtube](https://youtu.be/joxbx_d7u88)
 
 ## Overview
 
