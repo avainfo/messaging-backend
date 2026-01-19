@@ -40,8 +40,22 @@ const options: swaggerJsdoc.Options = {
         description: "Gestion des réactions sur les messages",
       },
     ],
+    components: {
+      securitySchemes: {
+        bearerAuth: {
+          type: "http",
+          scheme: "bearer",
+          bearerFormat: "JWT",
+        },
+      },
+    },
+    security: [
+      {
+        bearerAuth: [],
+      },
+    ],
   },
-  apis: ["./src/routes/*.ts"],
+  apis: ["./src/app.ts", "./src/routes/*.ts"],
 };
 
 export const swaggerSpec = swaggerJsdoc(options);

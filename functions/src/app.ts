@@ -32,6 +32,7 @@ export function createApp() {
    *   get:
  *     summary: Vérifie l'état de l'API
    *     tags: [Health]
+   *     security: []
    *     responses:
    *       200:
    *         description: API opérationnelle
