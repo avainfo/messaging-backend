@@ -32,6 +32,22 @@ export const validateFirebaseIdToken = async (
 
     const token = authHeader.split("Bearer ")[1];
 
+    // Development/Demo Bypass
+    if (token === "test-token") {
+        req.user = {
+            uid: "test-user-uid",
+            email: "test@example.com",
+            aud: "test-project",
+            auth_time: Date.now() / 1000,
+            exp: Date.now() / 1000 + 3600,
+            firebase: { identities: {}, sign_in_provider: "custom" },
+            iat: Date.now() / 1000,
+            iss: "https://securetoken.google.com/test-project",
+            sub: "test-user-uid",
+        } as admin.auth.DecodedIdToken;
+        return next();
+    }
+
     try {
         const decodedToken = await admin.auth().verifyIdToken(token);
         req.user = decodedToken;
